@@ -65,3 +65,17 @@ func generate_inside(rect: Rect2, action: Callable) -> void:
 			action.call(node)
 	
 	last_cells_rect = cells_rect
+
+
+func get_feature_map(bounds: Rect2i, img_width: int) -> Image:
+	var img := Image.create(img_width, img_width / bounds.size.aspect(), false, Image.FORMAT_RGBA8)
+	return img
+
+
+func get_distance_mask() -> Image:
+	var img := preload("res://circle.png").get_image()
+	var inner_img := preload("res://anti_circle.png").get_image()
+	var inner_size := 2048 * min_distance / max_distance
+	inner_img.resize(inner_size, inner_size, Image.INTERPOLATE_BILINEAR)
+	img.blit_rect(inner_img, Rect2i(Vector2i.ZERO, inner_img.get_size()), Vector2.ONE * (2048 - inner_size) / 2)
+	return img

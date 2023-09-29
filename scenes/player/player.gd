@@ -2,7 +2,6 @@ class_name Player
 extends RigidBody2D
 
 
-const NETWORK_UPDATE_DELAY := 0.1
 const THUMP := preload("res://sfx/536789__egomassive__thumps.wav")
 
 signal died

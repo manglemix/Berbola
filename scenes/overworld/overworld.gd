@@ -2,9 +2,9 @@ class_name Overworld
 extends Node2D
 
 
+const VIEW_DISTANCE := 768.0
+const MAP_EXPLORATION_TRAVEL_INTERVAL := 350.0
 const EXPIRY_TIME := 3.0
-#const CELL_WIDTH := 20
-#const ORIGIN_CLEARING_DISTANCE := 400
 
 var _section_descriptors: Array[SectionDescriptor]
 var _seed: int
@@ -29,7 +29,7 @@ func _ready() -> void:
 	_section_descriptors = [
 		SectionDescriptor.new(0)
 			.add_level_gen(LevelGen.new()),
-		SectionDescriptor.new(300)
+		SectionDescriptor.new(500)
 			.add_level_gen(TerrainGen.new(_seed, terrain_mesh))
 			.add_level_gen(CheckpointGen.new(_seed, 300)),
 	]
@@ -39,11 +39,17 @@ func _ready() -> void:
 	
 	_section_descriptors.back().set_max_distance(50000)
 	
-	_update_player_view()
+	_section_descriptors[1].level_gens["checkpoints"].get_feature_map(
+		Rect2i(Vector2i(-1000, -1000), Vector2i(2000, 1000)),
+		1000
+	).save_png("lmaozer.png")
+	_section_descriptors[1].level_gens["terrain"].get_feature_map(
+		Rect2i(Vector2i(-1000, -1000), Vector2i(2000, 1000)),
+		1000
+	).save_png("lmao1.png")
 
 
 func _process(_delta: float) -> void:
-	_update_player_view()
 	var visible_rect := get_viewport().canvas_transform.affine_inverse() * get_viewport().get_visible_rect()
 	visible_rect = visible_rect.grow(200)
 	
@@ -68,33 +74,6 @@ func _process(_delta: float) -> void:
 	
 	for j in range(min_i, max_i + 1):
 		_section_descriptors[j].generate_inside(visible_rect, on_generation)
-
-
-#func get_cells_rect() -> Rect2i:
-#	var cell_position := (visible_rect.position / CELL_WIDTH).floor()
-#	var cell_end := (visible_rect.end / CELL_WIDTH).ceil()
-#	return Rect2i(cell_position, cell_end - cell_position)
-
-
-func _update_player_view() -> void:
-	pass
-#	for x in range(cells_rect.position.x, cells_rect.end.x + 1):
-#		for y in range(cells_rect.position.y, cells_rect.end.y + 1):
-#			if y > 0:
-#				# Underworld
-#				continue
-#			var pos := Vector2i(x, y)
-#			if _last_cells_rect.has_point(pos):
-#				continue
-#			if (pos * CELL_WIDTH).length() <= ORIGIN_CLEARING_DISTANCE:
-#				# Leave space for spawn
-#				continue
-#			var node := sample_level_gen(pos)
-#			if node == null:
-#				continue
-#			add_child(node)
-#
-#	_last_cells_rect = cells_rect
 
 
 func on_generation(node: BoundedNode2D) -> void:
@@ -133,18 +112,33 @@ class SectionDescriptor:
 	func generate_inside(rect: Rect2, action: Callable) -> void:
 		for level_gen in level_gens.values():
 			level_gen.generate_inside(rect, action)
+
+
+func get_whole_map() -> Image:
+	var bounds := Rect2i()
+	bounds.position.x = ThisUser.min_map_x
+	bounds.position.y = ThisUser.min_map_y
+	bounds.end.x = ThisUser.max_map_x
+	bounds.end.y = 0
 	
-#	func sample(cell_pos: Vector2i) -> BoundedNode2D:
-#		assert((cell_pos * CELL_WIDTH).length() >= min_distance)
-#		var nodes: Array[BoundedNode2D] = []
-#		for lvl_gen in level_gens.values():
-#			var node: BoundedNode2D = lvl_gen.sample(cell_pos)
-#			if node == null:
-#				continue
-#			nodes.push_back(node)
-#
-#		var reducer := func(_accum: BoundedNode2D, current: BoundedNode2D):
-#			# TODO Improve
-#			return current
-#
-#		return nodes.reduce(reducer)
+	var single_view_mask := preload("res://circle.png").get_image()
+	var single_view_mask_width := VIEW_DISTANCE / maxi(bounds.size.x, bounds.size.y) * 8192 * 2
+	print_debug(single_view_mask_width)
+	single_view_mask.resize(single_view_mask_width, single_view_mask_width, Image.INTERPOLATE_NEAREST)
+	var explored_mask := Image.create(8192, 8192 / bounds.size.aspect(), false, Image.FORMAT_RGBA8)
+	ThisUser.bake_path()
+	for path in ThisUser.baked_paths:
+		for i in range(ceili(path.get_baked_length() / MAP_EXPLORATION_TRAVEL_INTERVAL)):
+			var point := path.sample_baked(i * MAP_EXPLORATION_TRAVEL_INTERVAL)
+			var img_point := Vector2i(((point - Vector2(bounds.position)) / Vector2(bounds.size) * 8192).round())
+			explored_mask.blit_rect_mask(single_view_mask, single_view_mask, Rect2i(Vector2.ZERO, single_view_mask.get_size()), img_point)
+
+	for section in _section_descriptors:
+		if "terrain" in section.level_gens:
+			pass
+
+	return explored_mask
+
+
+func _exit_tree() -> void:
+	get_whole_map().save_png("lwfwhe.png")

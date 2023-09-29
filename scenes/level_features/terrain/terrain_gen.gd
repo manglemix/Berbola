@@ -96,3 +96,40 @@ func _sample(cell_pos: Vector2i) -> BoundedNode2D:
 
 static func _get_cell_dimensions() -> Vector2:
 	return Vector2(20, 20)
+
+
+func get_feature_map(bounds: Rect2i, img_width: int) -> Image:
+	var aspect := bounds.size.aspect()
+	bounds.position.x /= 20
+	bounds.position.y /= 20
+	bounds.end.x = ceili(bounds.end.x as float / 20)
+	bounds.end.y = ceili(bounds.end.y as float / 20)
+	rng.offset = Vector3(- bounds.size.x / 2, - bounds.size.y, 0)
+	var img := rng.get_image(bounds.size.x, bounds.size.y, false, false, false)
+	rng.offset = Vector3.ZERO
+	var normalized_threshold := (threshold + 1) / 2
+	img.adjust_bcs(1 / normalized_threshold / 2, 1, 1)
+	img.adjust_bcs(1, 1000, 1)
+	img.convert(Image.FORMAT_RGBA8)
+	
+	var furthest_distance := bounds.position.length()
+	furthest_distance = maxf(furthest_distance, bounds.end.length())
+	furthest_distance = maxf(furthest_distance, (bounds.position + Vector2i(bounds.size.x, 0)).length())
+	furthest_distance = maxf(furthest_distance, (bounds.position + Vector2i(0, bounds.size.y)).length())
+	
+	if max_distance / furthest_distance > 5:
+		var min_distance_img := preload("res://circle.png").get_image()
+		var width := min_distance / 10
+		min_distance_img.resize(width, width, Image.INTERPOLATE_NEAREST)
+		min_distance_img.adjust_bcs(0, 1, 1)
+		img.blit_rect_mask(min_distance_img, min_distance_img, Rect2i(Vector2i.ZERO, min_distance_img.get_size()), - bounds.position + Vector2i.DOWN * min_distance_img.get_size().y / 2)
+	
+	else:
+		var mask := get_distance_mask()
+	
+	@warning_ignore("narrowing_conversion")
+	if img_width < bounds.size.x:
+		img.resize(img_width, img_width / aspect, Image.INTERPOLATE_LANCZOS)
+	else:
+		img.resize(img_width, img_width / aspect, Image.INTERPOLATE_NEAREST)
+	return img

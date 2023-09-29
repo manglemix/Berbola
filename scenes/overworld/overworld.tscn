@@ -10,7 +10,7 @@
 bounce = 0.7
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bo64u"]
-bg_color = Color(0.0431373, 0.0431373, 0.0431373, 1)
+bg_color = Color(0, 0, 0, 1)
 
 [sub_resource type="QuadMesh" id="QuadMesh_ubp55"]
 size = Vector2(20, 20)

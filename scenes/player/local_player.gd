@@ -1,7 +1,7 @@
 class_name LocalPlayer
 extends Player
 
-
+const NETWORK_UPDATE_DELAY := 0.1
 const HEARING_RAYCASTS := 4
 const HEARING_SPREAD := 60
 const HEARING_DISTANCE := 300
@@ -19,6 +19,8 @@ var _network_update_timer := 0.0
 
 
 func _ready() -> void:
+	died.connect(ThisUser._on_local_player_died)
+	
 	playback2 = AudioStreamPlayer2D.new()
 	playback2.stream = AudioStreamPolyphonic.new()
 	playback2.bus = "ReverbRight"
@@ -80,6 +82,7 @@ func _process(delta: float) -> void:
 	if _network_update_timer <= 0.0:
 		_network_update_timer = NETWORK_UPDATE_DELAY
 		network_update.rpc(linear_velocity, position, rotation, angular_velocity)
+		ThisUser.add_path_point(Vector2i(position.round()))
 
 
 func _physics_process(_delta: float) -> void:

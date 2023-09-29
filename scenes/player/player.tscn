@@ -4,10 +4,11 @@
 [ext_resource type="Texture2D" uid="uid://dvy3mov36dsvk" path="res://scenes/player/2d_lights_and_shadows_neutral_point_light.webp" id="2_yyxav"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_fkhax"]
+radius = 15.0
 
 [sub_resource type="SphereMesh" id="SphereMesh_ooiiv"]
-radius = 10.0
-height = 20.0
+radius = 15.0
+height = 30.0
 
 [sub_resource type="AudioStreamPolyphonic" id="AudioStreamPolyphonic_noa7u"]
 
@@ -29,7 +30,7 @@ mesh = SubResource("SphereMesh_ooiiv")
 
 [node name="Polygon2D" type="Polygon2D" parent="."]
 color = Color(0, 0, 0, 1)
-polygon = PackedVector2Array(-4, -8, 4, -8, 0, -2)
+polygon = PackedVector2Array(-6, -11, 6, -11, 0, -2)
 
 [node name="PointLight2D" type="PointLight2D" parent="."]
 energy = 1.6

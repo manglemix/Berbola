@@ -24,7 +24,7 @@ ThisUser="*res://singletons/this_user.gd"
 window/size/viewport_width=648
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
-window/stretch/scale=0.75
+window/stretch/scale=0.5
 
 [input]
 

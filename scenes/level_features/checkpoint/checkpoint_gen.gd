@@ -3,7 +3,7 @@ extends LevelGen
 
 
 const TERRAIN_DISTANCE := 300
-const CHECKPOINT_DISTANCE := 10
+const CHECKPOINT_DISTANCE := 20
 const MAX_ATTEMPS := 500
 
 
@@ -78,3 +78,25 @@ func _sample(cell_pos: Vector2i) -> BoundedNode2D:
 			checkpoints[cell_pos] = null
 	)
 	return node
+
+
+func get_feature_map(bounds: Rect2i, img_width: int) -> Image:
+	var aspect := bounds.size.aspect()
+	bounds.position.x /= 150
+	bounds.position.y /= 90
+	bounds.end.x = ceili(bounds.end.x as float / 150)
+	bounds.end.y = ceili(bounds.end.y as float / 90)
+	var img := Image.create(bounds.size.x, bounds.size.y, false, Image.FORMAT_RGBA8)
+	img.fill(Color.BLACK)
+	for pos in checkpoints:
+		var x: int = pos.x - bounds.position.x
+		var y: int = - pos.y + bounds.position.y
+		if x < 0 or y < 0 or x >= bounds.size.x or y >= bounds.size.y:
+			continue
+		img.set_pixel(x, y, Color.WHITE)
+	@warning_ignore("narrowing_conversion")
+	if img_width < bounds.size.x:
+		img.resize(img_width, img_width / aspect, Image.INTERPOLATE_LANCZOS)
+	else:
+		img.resize(img_width, img_width / aspect, Image.INTERPOLATE_NEAREST)
+	return img
