@@ -1,0 +1,2 @@
+class_name Checkpoint
+extends BoundedNode2D

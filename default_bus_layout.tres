@@ -1,0 +1,47 @@
+[gd_resource type="AudioBusLayout" load_steps=5 format=3 uid="uid://ghiwpra48mji"]
+
+[sub_resource type="AudioEffectReverb" id="AudioEffectReverb_vd3te"]
+resource_name = "Reverb"
+predelay_msec = 20.0
+wet = 0.3
+
+[sub_resource type="AudioEffectPanner" id="AudioEffectPanner_m3h6d"]
+resource_name = "Panner"
+pan = -1.0
+
+[sub_resource type="AudioEffectReverb" id="AudioEffectReverb_cknd8"]
+resource_name = "Reverb"
+predelay_msec = 20.0
+wet = 0.3
+
+[sub_resource type="AudioEffectPanner" id="AudioEffectPanner_8bk2b"]
+resource_name = "Panner"
+pan = 1.0
+
+[resource]
+bus/1/name = &"Ambient"
+bus/1/solo = false
+bus/1/mute = false
+bus/1/bypass_fx = false
+bus/1/volume_db = 0.0
+bus/1/send = &"Master"
+bus/2/name = &"ReverbLeft"
+bus/2/solo = false
+bus/2/mute = false
+bus/2/bypass_fx = false
+bus/2/volume_db = 0.0
+bus/2/send = &"Ambient"
+bus/2/effect/0/effect = SubResource("AudioEffectReverb_vd3te")
+bus/2/effect/0/enabled = true
+bus/2/effect/1/effect = SubResource("AudioEffectPanner_m3h6d")
+bus/2/effect/1/enabled = true
+bus/3/name = &"ReverbRight"
+bus/3/solo = false
+bus/3/mute = false
+bus/3/bypass_fx = false
+bus/3/volume_db = 0.0
+bus/3/send = &"Ambient"
+bus/3/effect/0/effect = SubResource("AudioEffectReverb_cknd8")
+bus/3/effect/0/enabled = true
+bus/3/effect/1/effect = SubResource("AudioEffectPanner_8bk2b")
+bus/3/effect/1/enabled = true

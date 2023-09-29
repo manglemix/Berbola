@@ -1,0 +1,21 @@
+[gd_scene load_steps=3 format=3 uid="uid://dnohsill65hft"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_wfgo7"]
+size = Vector2(400, 20)
+
+[sub_resource type="QuadMesh" id="QuadMesh_pvvlh"]
+size = Vector2(400, 20)
+
+[node name="Origin" type="Node2D"]
+
+[node name="StaticBody2D" type="StaticBody2D" parent="."]
+position = Vector2(0, 50)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D"]
+shape = SubResource("RectangleShape2D_wfgo7")
+
+[node name="MeshInstance2D" type="MeshInstance2D" parent="StaticBody2D"]
+mesh = SubResource("QuadMesh_pvvlh")
+
+[node name="VisibleOnScreenEnabler2D" type="VisibleOnScreenEnabler2D" parent="."]
+rect = Rect2(-250, -200, 500, 400)

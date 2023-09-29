@@ -1,0 +1,53 @@
+[gd_scene load_steps=6 format=3 uid="uid://cp5vvp3vheb5x"]
+
+[sub_resource type="GDScript" id="GDScript_16r7k"]
+script/source = "extends BoundedNode2D
+
+
+func _ready() -> void:
+	$Area2D.body_entered.connect(
+		func(body: Node2D):
+			if not body is LocalPlayer:
+				return
+			var pos := cell_pos * Vector2i(CheckpointGen._get_cell_dimensions())
+			ThisUser.last_activated_checkpoint = pos
+			ThisUser.activated_checkpoints[pos] = null
+	)
+"
+
+[sub_resource type="QuadMesh" id="QuadMesh_57aoa"]
+size = Vector2(20, 20)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_najmf"]
+size = Vector2(150, 20)
+
+[sub_resource type="QuadMesh" id="QuadMesh_ewj5r"]
+size = Vector2(150, 20)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_27y22"]
+size = Vector2(50, 50)
+
+[node name="Checkpoint" type="VisibleOnScreenNotifier2D"]
+z_index = 100
+rect = Rect2(-75, -45, 150, 90)
+script = SubResource("GDScript_16r7k")
+
+[node name="MeshInstance2D" type="MeshInstance2D" parent="."]
+modulate = Color(0.172549, 1, 0.454902, 1)
+mesh = SubResource("QuadMesh_57aoa")
+
+[node name="StaticBody2D" type="StaticBody2D" parent="."]
+position = Vector2(0, 35)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D"]
+shape = SubResource("RectangleShape2D_najmf")
+
+[node name="MeshInstance2D" type="MeshInstance2D" parent="StaticBody2D"]
+mesh = SubResource("QuadMesh_ewj5r")
+
+[node name="Area2D" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
+shape = SubResource("RectangleShape2D_27y22")

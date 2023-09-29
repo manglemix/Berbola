@@ -1,0 +1,44 @@
+[gd_scene load_steps=6 format=3 uid="uid://d0puirawyk5tm"]
+
+[ext_resource type="Script" path="res://scenes/player/player.gd" id="1_unymw"]
+[ext_resource type="Texture2D" uid="uid://dvy3mov36dsvk" path="res://scenes/player/2d_lights_and_shadows_neutral_point_light.webp" id="2_yyxav"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_fkhax"]
+
+[sub_resource type="SphereMesh" id="SphereMesh_ooiiv"]
+radius = 10.0
+height = 20.0
+
+[sub_resource type="AudioStreamPolyphonic" id="AudioStreamPolyphonic_noa7u"]
+
+[node name="Player" type="RigidBody2D"]
+light_mask = 0
+collision_layer = 2
+collision_mask = 3
+continuous_cd = 2
+max_contacts_reported = 1
+contact_monitor = true
+can_sleep = false
+script = ExtResource("1_unymw")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_fkhax")
+
+[node name="MeshInstance2D" type="MeshInstance2D" parent="."]
+mesh = SubResource("SphereMesh_ooiiv")
+
+[node name="Polygon2D" type="Polygon2D" parent="."]
+color = Color(0, 0, 0, 1)
+polygon = PackedVector2Array(-4, -8, 4, -8, 0, -2)
+
+[node name="PointLight2D" type="PointLight2D" parent="."]
+energy = 1.6
+shadow_color = Color(0, 0, 0, 1)
+shadow_filter_smooth = 2.0
+texture = ExtResource("2_yyxav")
+texture_scale = 6.0
+
+[node name="Playback" type="AudioStreamPlayer2D" parent="."]
+stream = SubResource("AudioStreamPolyphonic_noa7u")
+autoplay = true
+bus = &"Ambient"

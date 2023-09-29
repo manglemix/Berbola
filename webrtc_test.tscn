@@ -1,0 +1,153 @@
+[gd_scene load_steps=3 format=3 uid="uid://cy82ayrl8sxi2"]
+
+[sub_resource type="GDScript" id="GDScript_i03wl"]
+script/source = "extends Button
+
+
+var ws: WebSocketPeer
+
+
+func _ready() -> void:
+	await pressed
+	$\"../Button2\".queue_free()
+	$\"../LineEdit\".queue_free()
+	var multiplayer_peer := WebRTCMultiplayerPeer.new()
+	multiplayer_peer.create_server()
+	multiplayer.multiplayer_peer = multiplayer_peer
+	
+	ws = WebSocketPeer.new()
+#	ws.connect_to_url(\"ws://3.133.107.218/host\")
+	ws.connect_to_url(\"wss://webrtc.manglemix.com/host\")
+	var code := await ws_recv()
+	print(code)
+	
+	while true:
+		var msg: Dictionary = JSON.parse_string(await ws_recv())
+		var client_id: int = msg[\"id\"]
+		
+		if \"new_offer\" in msg:
+			var peer := WebRTCPeerConnection.new()
+			peer.session_description_created.connect(peer.set_local_description)
+			multiplayer_peer.add_peer(peer, client_id)
+			peer.set_remote_description(\"offer\", msg[\"new_offer\"])
+			peer.session_description_created.connect(
+				func(type: String, sdp: String):
+					assert(type == \"answer\")
+					ws.send_text(str({ \"answer\": sdp, \"id\": client_id }))
+			)
+			peer.ice_candidate_created.connect(
+				func(media: String, index: int, _name: String):
+					ws.send_text(str({ \"ice\": { \"media\": media, \"index\": index, \"name\": _name }, \"id\": client_id }))
+			)
+		
+		elif \"ice\" in msg:
+			var peer: WebRTCPeerConnection = multiplayer_peer.get_peer(client_id)[\"connection\"]
+			var ice: Dictionary = msg[\"ice\"]
+			peer.add_ice_candidate(ice[\"media\"], ice[\"index\"], ice[\"name\"])
+		
+		else:
+			push_error(\"Unrecognized message: %s\" % msg)
+
+
+func ws_recv() -> String:
+	while true:
+		await get_tree().create_timer(0.2).timeout
+		if ws.get_available_packet_count() > 0:
+			return ws.get_packet().get_string_from_utf8()
+	return \"\"
+
+
+func _process(_delta: float) -> void:
+	if ws != null:
+		ws.poll()
+"
+
+[sub_resource type="GDScript" id="GDScript_5od4b"]
+script/source = "extends Button
+
+
+var ws: WebSocketPeer
+
+
+func _ready() -> void:
+	await pressed
+	var room_code: String = $\"../LineEdit\".text
+	$\"../Button\".queue_free()
+	
+	ws = WebSocketPeer.new()
+	ws.connect_to_url(\"wss://webrtc.manglemix.com/join\")
+#	ws.connect_to_url(\"ws://3.133.107.218/join\")
+	await get_tree().create_timer(0.5).timeout
+	ws.send_text(room_code)
+	
+	var client_id := int(await ws_recv())
+	var multiplayer_peer := WebRTCMultiplayerPeer.new()
+	multiplayer_peer.create_client(client_id)
+	multiplayer.multiplayer_peer = multiplayer_peer
+	multiplayer.connected_to_server.connect(
+		func():
+			print(\"CONNECTED!\")
+	)
+	
+	var peer := WebRTCPeerConnection.new()
+	peer.session_description_created.connect(peer.set_local_description)
+	multiplayer_peer.add_peer(peer, 1)
+	peer.session_description_created.connect(
+		func(_type: String, sdp: String):
+			ws.send_text(sdp)
+			peer.set_remote_description(\"answer\", await ws_recv())
+			while true:
+				var ice: Dictionary = JSON.parse_string(await ws_recv())
+				peer.add_ice_candidate(ice[\"media\"], ice[\"index\"], ice[\"name\"])
+	)
+	peer.create_offer()
+
+
+func ws_recv() -> String:
+	while true:
+		await get_tree().create_timer(0.2).timeout
+		if ws.get_available_packet_count() > 0:
+			return ws.get_packet().get_string_from_utf8()
+	return \"\"
+
+
+func _process(_delta: float) -> void:
+	if ws != null:
+		ws.poll()
+"
+
+[node name="Control" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -10.0
+offset_top = -4.0
+offset_right = 10.0
+offset_bottom = 4.0
+grow_horizontal = 2
+grow_vertical = 2
+alignment = 1
+
+[node name="Button" type="Button" parent="HBoxContainer"]
+layout_mode = 2
+text = "HOST"
+script = SubResource("GDScript_i03wl")
+
+[node name="Button2" type="Button" parent="HBoxContainer"]
+layout_mode = 2
+text = "JOIN"
+script = SubResource("GDScript_5od4b")
+
+[node name="LineEdit" type="LineEdit" parent="HBoxContainer"]
+layout_mode = 2

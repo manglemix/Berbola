@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3 uid="uid://cmx7uh64nubhs"]
+
+[ext_resource type="PackedScene" uid="uid://dpbk5qjyr5nm7" path="res://overworld.tscn" id="2_ceme2"]
+
+[node name="Node" type="Node"]
+
+[node name="Overworld" parent="." instance=ExtResource("2_ceme2")]
